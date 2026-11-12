@@ -1,4 +1,4 @@
-# Workflow for building and deploying an Academic Pages / Jekyll site to GitHub Pages
+# Build and deploy the Academic Pages site to GitHub Pages.
 name: Deploy Academic Pages template site to Pages
 
 on:
@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    outputs:
+      pages_configured: ${{ steps.pages.outcome == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
@@ -50,11 +52,12 @@ jobs:
         uses: actions/upload-pages-artifact@v5.0.0
 
   deploy:
+    if: ${{ needs.build.outputs.pages_configured == 'true' }}
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
