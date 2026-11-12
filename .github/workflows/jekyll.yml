@@ -48,6 +48,62 @@ jobs:
         run: bundle exec jekyll build
         env:
           JEKYLL_ENV: production
+      - name: Verify generated content
+        run: |
+          set -euo pipefail
+          test -f _site/index.html
+          test -f _site/publications/index.html
+          test -f _site/publications/synlogic/index.html
+
+          for s in \
+            "Junteng Liu" \
+            "first-year PhD candidate at the HKUST NLP Group" \
+            "Personal Details" \
+            "Academic Background" \
+            "Honors and Awards" \
+            "Research Experience" \
+            "Skills and Research Expertise" \
+            "Contact Information" \
+            "Zhiyuan Honor Scholarship" \
+            "jliugi@connect.ust.hk" \
+            "Vicent0205" \
+            "tbK9jl4AAAAJ" \
+            "junteng88716710" \
+            "SynLogic" \
+            "On the Perception Bottleneck of VLMs for Chart Understanding" \
+            "On the Universal Truthfulness Hyperplane Inside LLMs" \
+            "In-Context Sharpness as Alerts" \
+            "C-Eval" \
+            "Composing Parameter-Efficient Modules with Arithmetic Operations"; do
+            grep -Fq "$s" _site/index.html || { echo "Missing on About: $s"; exit 1; }
+          done
+
+          for s in \
+            "SynLogic" \
+            "On the Perception Bottleneck of VLMs for Chart Understanding" \
+            "On the Universal Truthfulness Hyperplane Inside LLMs" \
+            "In-Context Sharpness as Alerts" \
+            "C-Eval" \
+            "Composing Parameter-Efficient Modules with Arithmetic Operations" \
+            "EMNLP 2024" \
+            "ICML 2024" \
+            "NeurIPS 2023" \
+            "<strong>Junteng Liu</strong>"; do
+            grep -Fq "$s" _site/publications/index.html || { echo "Missing on publications index: $s"; exit 1; }
+          done
+
+          grep -Fq "Vision4Chart" _site/publications/perception-bottleneck-vlm-chart/index.html
+          grep -Fq "Universal_Truthfulness_Hyperplane" _site/publications/universal-truthfulness-hyperplane/index.html
+          grep -Fq "GitHub code repository available" _site/publications/synlogic/index.html
+
+          if grep -R -Fq "Paper Title Number" _site/index.html _site/publications; then
+            echo "Sample publication content remains in the generated site."
+            exit 1
+          fi
+          if grep -Fq "Academic Pages is a ready-to-fork" _site/index.html; then
+            echo "Template About content remains on the home page."
+            exit 1
+          fi
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v5.0.0
 
